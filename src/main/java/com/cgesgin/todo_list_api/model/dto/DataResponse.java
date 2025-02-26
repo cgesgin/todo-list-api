@@ -10,4 +10,7 @@ import lombok.NoArgsConstructor;
 public class DataResponse<T> {
     private T data;
     private String message;
+    private int page;
+    private int limit;
+    private long total;
 }

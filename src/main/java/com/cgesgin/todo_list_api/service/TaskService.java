@@ -3,6 +3,9 @@ package com.cgesgin.todo_list_api.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -86,18 +89,19 @@ public class TaskService implements ITaskService {
         return null;
     }
 
-    public List<Task> getFilteredAndSortedTasks(String title, Boolean completed, String sortBy, String direction) {
-
+    @Override
+    public Page<Task> getFilteredAndSortedTasks(String title, Boolean completed, String sortBy, String direction, int page, int limit) {
         Sort sort = Sort.by(direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+        Pageable pageable = PageRequest.of(page, limit, sort);
 
         if (title != null && completed != null) {
-            return taskRepository.findByTitleContainingAndCompleted(title, completed, sort);
+            return taskRepository.findByTitleContainingAndCompleted(title, completed, pageable);
         } else if (title != null) {
-            return taskRepository.findByTitleContaining(title, sort);
+            return taskRepository.findByTitleContaining(title, pageable);
         } else if (completed != null) {
-            return taskRepository.findByCompleted(completed, sort);
+            return taskRepository.findByCompleted(completed, pageable);
         } else {
-            return taskRepository.findAll(sort);
+            return taskRepository.findAll(pageable);
         }
     }
 }

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,17 +37,25 @@ public class TaskController {
         @RequestParam(required = false) String title,
         @RequestParam(required = false) Boolean completed,
         @RequestParam(defaultValue = "id") String sortBy,
-        @RequestParam(defaultValue = "asc") String direction
-    ) {
+        @RequestParam(defaultValue = "asc") String direction,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int limit)
+    {
         DataResponse<List<Task>> response = new DataResponse<>();
+        Page<Task> taskPage;
         
         if (title == null && completed == null) {
-            response.setData(taskService.getAll());
+            taskPage = taskService.getFilteredAndSortedTasks(null, null, sortBy, direction, page, limit);
         } else {
-            response.setData(taskService.getFilteredAndSortedTasks(title, completed, sortBy, direction));
+            taskPage = taskService.getFilteredAndSortedTasks(title, completed, sortBy, direction, page, limit);
         }
         
+        response.setData(taskPage.getContent());
+        response.setPage(taskPage.getNumber());
+        response.setLimit(taskPage.getSize());
+        response.setTotal(taskPage.getTotalElements());
         response.setMessage(HttpStatus.OK.toString());
+        
         return ResponseEntity.ok(response);
     }
 

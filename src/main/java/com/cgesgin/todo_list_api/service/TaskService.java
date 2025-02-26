@@ -3,6 +3,7 @@ package com.cgesgin.todo_list_api.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -46,10 +47,10 @@ public class TaskService implements ITaskService {
     public Task save(Task task) {
         User user = getAuthenticatedUser();
 
-        if(task.getId()!=null){
+        if (task.getId() != null) {
             task.setId(null);
         }
-        
+
         if (user != null) {
             task.setUser(user);
             return taskRepository.save(task);
@@ -83,5 +84,20 @@ public class TaskService implements ITaskService {
             return taskRepository.save(task);
         }
         return null;
+    }
+
+    public List<Task> getFilteredAndSortedTasks(String title, Boolean completed, String sortBy, String direction) {
+
+        Sort sort = Sort.by(direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+
+        if (title != null && completed != null) {
+            return taskRepository.findByTitleContainingAndCompleted(title, completed, sort);
+        } else if (title != null) {
+            return taskRepository.findByTitleContaining(title, sort);
+        } else if (completed != null) {
+            return taskRepository.findByCompleted(completed, sort);
+        } else {
+            return taskRepository.findAll(sort);
+        }
     }
 }

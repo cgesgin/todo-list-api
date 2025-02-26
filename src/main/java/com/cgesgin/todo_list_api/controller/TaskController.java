@@ -1,6 +1,7 @@
 package com.cgesgin.todo_list_api.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cgesgin.todo_list_api.model.dto.DataResponse;
@@ -31,16 +32,20 @@ public class TaskController {
     }
 
     @GetMapping("/tasks")
-    public ResponseEntity<DataResponse<List<Task>>> getAll() {
-        List<Task> tasks = taskService.getAll();
+    public ResponseEntity<DataResponse<List<Task>>> getAll(
+        @RequestParam(required = false) String title,
+        @RequestParam(required = false) Boolean completed,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "asc") String direction
+    ) {
         DataResponse<List<Task>> response = new DataResponse<>();
-
-        if (tasks == null || tasks.isEmpty()) {
-            response.setMessage(HttpStatus.NOT_FOUND.toString());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        
+        if (title == null && completed == null) {
+            response.setData(taskService.getAll());
+        } else {
+            response.setData(taskService.getFilteredAndSortedTasks(title, completed, sortBy, direction));
         }
-
-        response.setData(tasks);
+        
         response.setMessage(HttpStatus.OK.toString());
         return ResponseEntity.ok(response);
     }

@@ -11,4 +11,6 @@ public interface ITaskService {
     public void deleteById(Long id);
     public Task getById(Long id);
     public Task update(Task task);
+    public List<Task> getFilteredAndSortedTasks(String title, Boolean completed, String sortBy, String direction);
+
 }
